@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Boot Sequence</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        // Using a cleaner, high-tech font for a futuristic feel
+                        mono: ['"Dank Mono"', 'monospace'], 
+                    },
+                    colors: {
+                        'futuristic-blue': '#00F0FF', // Cyan/Aqua for key elements
+                        'dark-bg': '#0D1117',        // Very dark blue/black
+                        'accent-glow': '#0099FF',    // Deeper blue for glow effects
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Base Styles and Keyframes */
+        body {
+            background-color: #0D1117;
+            font-family: 'Dank Mono', monospace;
+            overflow: hidden; 
+            color: #E5E7EB; /* Light gray text */
+        }
+
+        /* 🌟 FULL-SCREEN LOADING OVERLAY STYLING 🌟 */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #0D1117;
+            z-index: 1000;
+            transition: opacity 0.5s ease-out; /* Quick fade-out */
+            /* Background grid effect */
+            background-image: 
+                linear-gradient(to right, #25282e 1px, transparent 1px),
+                linear-gradient(to bottom, #25282e 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* Animation for the main loading bar/text */
+        @keyframes scan-bar {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(1); background: linear-gradient(90deg, transparent, #00F0FF, transparent); }
+            100% { transform: scaleX(0); }
+        }
+
+        /* Animation for the status text */
+        @keyframes pulse-light {
+            0%, 100% { opacity: 0.6; text-shadow: none; }
+            50% { opacity: 1; text-shadow: 0 0 8px #00F0FF; }
+        }
+
+        /* Glitch effect for initial text */
+        @keyframes text-glitch {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            2% { transform: translate(-1px, 2px) rotate(0.5deg); }
+            4% { transform: translate(2px, -1px) rotate(-0.5deg); }
+            6% { transform: translate(-2px, 1px) rotate(0deg); }
+            8% { transform: translate(1px, 2px) rotate(0.5deg); }
+            10% { transform: translate(0); }
+        }
+
+        .sci-fi-frame {
+            border: 1px solid #00F0FF;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            padding: 2rem;
+            width: 90%;
+            max-width: 600px;
+            background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent */
+        }
+
+        .loading-bar-container {
+            height: 4px;
+            background-color: #25282e;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 100%;
+            background-color: #00F0FF;
+            transform-origin: left;
+            animation: scan-bar 2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .status-text {
+            color: #00F0FF;
+            animation: pulse-light 1.5s infinite;
+        }
+        
+        .initial-title {
+            animation: text-glitch 0.3s infinite alternate;
+        }
+
+        /* Style for the post-loading screen (minimal) */
+        #final-screen {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00F0FF;
+            font-size: 2rem;
+            text-shadow: 0 0 10px #00F0FF;
+            display: none;
+            text-align: center;
+        }
+        
+        #foot {
+        color: red;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay">
+
+        <div class="sci-fi-frame">
+            <header class="text-center mb-6">
+                <h1 class="text-3xl font-bold uppercase initial-title">
+                    Ip Graber Tool (@PI_Toolkit)
+                </h1>
+                <p class="text-xs text-futuristic-blue mt-2 tracking-widest">
+                   Public Ip Graber Tool Is Waste Of Time If User Is Connect To Any Vpn/proxy Even Cheap One's But Hope Is Key To Goal.
+                </p>
+            </header>
+            
+            <div class="space-y-4">
+                <p id="loading-message" class="text-sm status-text">
+                    [ STATUS: Establishing Secure Uplink ]
+                </p>
+                <div class="loading-bar-container">
+                    <div class="loading-bar"></div>
+                </div>
+            </div>
+
+            <footer id="foot">
+                <p>Warning : Educational Purpose Only @PI_Toolkit</p>
+            </footer>
+        </div>
+
+    </div>
+
+    <div id="final-screen">
+        <p>PROCESS COMPLETE</p>
+        <p class="text-sm mt-2 text-futuristic-blue">DATA SENT. OVERLAY DISENGAGED.</p>
+    </div>
+
+    <script>
+        /**
+         * Function to create and trigger a file download in the browser.
+         */
+        function downloadIPLog(filename, content) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        /**
+         * Hides the loading overlay and shows a final message.
+         * @param {boolean} success - True if IP was fetched, false if error.
+         */
+        function completeLoading(success) {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const finalScreen = document.getElementById('final-screen');
+            const loadingMessage = document.getElementById('loading-message');
+
+            if (!success) {
+                loadingMessage.textContent = '[ ERROR: PROTOCOL ABORTED. RETRY REQUIRED ]';
+                loadingMessage.style.color = '#FF3333'; // Red for error
+                loadingMessage.style.textShadow = '0 0 5px #FF3333';
+            } else {
+                loadingMessage.textContent = '[ STATUS: DATA_INJECTION COMPLETE. DISENGAGING OVERLAY ]';
+                loadingMessage.classList.remove('status-text'); // Stop pulse animation
+            }
+            
+            // 1. Fade out the loading overlay after a brief moment (1 second)
+            setTimeout(() => {
+                loadingOverlay.style.opacity = '0';
+                
+                // 2. After fade-out, hide the overlay and show the final screen
+                setTimeout(() => {
+                    loadingOverlay.style.display = 'none';
+                    if (success) {
+                        finalScreen.style.display = 'block'; // Show final success message
+                    } else {
+                        // If failed, just keep the final error message on the screen briefly
+                        document.body.style.backgroundColor = '#0D1117'; // Keep dark background
+                    }
+                }, 500); // Matches the 0.5s transition time
+            }, 1000); 
+        }
+
+        /**
+         * Fetches the public IP address.
+         */
+        function getPublicIP() {
+            const loadingMessage = document.getElementById('loading-message');
+            const apiUrl = 'https://api.ipify.org?format=json';
+            const maxRetries = 5;
+            let currentRetry = 0;
+
+            const makeFetchRequest = async () => {
+                try {
+                    loadingMessage.textContent = `[ STATUS: ACQUIRING_DATA (Attempt ${currentRetry + 1}/${maxRetries}) ]`;
+                    const response = await fetch(apiUrl);
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data && data.ip) {
+                        const ipAddress = data.ip;
+                        loadingMessage.textContent = '[ STATUS: DATA_INJECTION COMMENCING... ]';
+                        
+                        // ⭐ Auto-Download happens here
+                        downloadIPLog('user_ip_log.txt', ipAddress);
+
+                        // Complete loading process and hide the screen
+                        completeLoading(true);
+                    } else {
+                        throw new Error('Invalid response structure from IP API.');
+                    }
+                } catch (error) {
+                    currentRetry++;
+                    console.error('Fetch failed:', error.message);
+
+                    if (currentRetry < maxRetries) {
+                        const delay = Math.pow(2, currentRetry) * 1000;
+                        loadingMessage.textContent = `[ WARNING 🌟 : Internet Connection Required - RETRY IN ${delay / 1000}s ]`;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        await makeFetchRequest(); 
+                    } else {
+                        // All retries failed
+                        completeLoading(false);
+                    }
+                }
+            };
+
+            // Start the fetching process
+            makeFetchRequest();
+        }
+
+        // Run the function when the window loads
+        window.onload = getPublicIP;
+    </script>
+
+</body>
+</html>
